@@ -157,8 +157,8 @@ def update_env(env: os._Environ[str], bindir: str) -> dict:
     return env_copy
 
 
-def main(progname="salt-test"):
-    parser = prepare_argparser(progname)
+def main():
+    parser = prepare_argparser("salt-test")
     args = parser.parse_args()
 
     if args.config:
@@ -200,7 +200,3 @@ def main(progname="salt-test"):
         env=env,
         cwd=cwd,
     )
-
-
-if __name__ == "__main__":
-    main("salt_tests_launcher.py")
