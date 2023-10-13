@@ -118,3 +118,10 @@ functional = [
 	"tests/pytests/functional/utils/yamllint/test_yamllint.py::test_version",
 	"tests/pytests/functional/utils/yamllint/test_yamllint.py::test_has_yamllint",
 ]
+scenarios = [
+	"tests/pytests/scenarios/multimaster/beacons/test_inotify.py::test_beacons_duplicate_53344",
+	"tests/pytests/scenarios/reauth/test_reauth.py::test_reauth",
+	"tests/pytests/scenarios/blackout/test_minion_blackout.py::test_blackout",
+	"tests/pytests/scenarios/blackout/test_minion_blackout.py::test_blackout_whitelist",
+	"tests/pytests/scenarios/blackout/test_minion_blackout.py::test_blackout_nonwhitelist",
+]
