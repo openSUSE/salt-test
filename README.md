@@ -6,4 +6,9 @@ groups are taken as empty lists, they do  not have t be listed explicitely.
 
 TODO:
 - document format, how to use it
-- currently requires python + toml. this is not always installed, should we add a dependency or try to find the bundle python interpreter?
+- currently requires python + toml. Fallback to tomli if toml not available. Script will be rpm-installed and pull in dep if needed. Also sets the correct python interpreter
+- split test launcher and skiplist? yes!
+
+# test requirements
+
+- `pytest`
