@@ -79,12 +79,19 @@ def find_testsuite_root(flavor: str) -> str:
     :param flavor: One of "classic", "bundle".
     """
 
-    def _list_files(rpm: str) -> typing.List[str]:
-        cp = subprocess.run(
-            ["rpm", "-q", "-l", rpm],
-            stdout=subprocess.PIPE,
-            encoding="utf-8",
-        )
+    def _list_files(pkg: str) -> typing.List[str]:
+        try:
+            cp = subprocess.run(
+                ["rpm", "-q", "-l", pkg],
+                stdout=subprocess.PIPE,
+                encoding="utf-8",
+            )
+        except FileNotFoundError:
+            cp = subprocess.run(
+                ["dpkg", "-L", pkg],
+                stdout=subprocess.PIPE,
+                encoding="utf-8",
+            )
         if cp.returncode != 0:
             return []
         return cp.stdout.split()
