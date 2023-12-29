@@ -220,8 +220,9 @@ def main():
     env = update_env(os.environ, bindir)
     cmd = pytest_cmd(args.test_group, skiplist, config, args.pytest_args)
     print("Running:", " ".join(cmd))
-    subprocess.run(
+    pytest_retcode = subprocess.run(
         cmd,
         env=env,
         cwd=cwd,
-    )
+    ).returncode
+    sys.exit(pytest_retcode)
