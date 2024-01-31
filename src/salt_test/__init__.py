@@ -177,9 +177,16 @@ def prepare_argparser() -> ArgumentParser:
     return parser
 
 
-def update_env(env: os._Environ, bindir: str) -> dict:
+def update_env(env: os._Environ, bindir: str, cwd: str) -> dict:
+    """Update PATH and PYTHONPATH env variables.
+
+    PATH is modified to contain bindir as the first entry. This ensures that `pytest` can
+    be found.
+    PYTHONPATH is set to cwd. This ensures that the correct Salt code is tested.
+    """
     env_copy = env.copy()
     env_copy["PATH"] = f"{bindir}:{env_copy['PATH']}"
+    env_copy["PYTHONPATH"] = cwd
     return env_copy
 
 
@@ -217,7 +224,7 @@ def main():
 
     bindir = testsuite_root_to_bindir(testsuite_root)
 
-    env = update_env(os.environ, bindir)
+    env = update_env(os.environ, bindir, cwd)
     cmd = pytest_cmd(args.test_group, skiplist, config, args.pytest_args)
     print("Running:", " ".join(cmd))
     pytest_retcode = subprocess.run(
