@@ -24,7 +24,7 @@ DEFAULT_CONFIG = {
     "functional": {"dirs": ["tests/pytests/functional"], "pytest_args": []},
     "integration": {
         "dirs": ["tests/integration/", "tests/pytests/integration/"],
-        "pytest_args": [],
+        "pytest_args": ["--slow"],
     },
     "scenarios": {"dirs": ["tests/pytests/scenarios/"], "pytest_args": ["--slow"]},
 }
