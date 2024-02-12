@@ -21,7 +21,7 @@ except ImportError:
 
 DEFAULT_CONFIG = {
     "unit": {"dirs": ["tests/unit/", "tests/pytests/unit/"], "pytest_args": []},
-    "functional": {"dirs": ["tests/pytests/functional"], "pytest_args": []},
+    "functional": {"dirs": ["tests/pytests/functional"], "pytest_args": ["--slow"]},
     "integration": {
         "dirs": ["tests/integration/", "tests/pytests/integration/"],
         "pytest_args": ["--slow"],
