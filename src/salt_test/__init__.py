@@ -6,8 +6,7 @@ import subprocess
 import sys
 import typing
 import urllib.request
-from argparse import ArgumentParser, FileType
-from collections import defaultdict
+from argparse import ArgumentParser
 
 try:
     import tomllib  # available in Python 3.11+
