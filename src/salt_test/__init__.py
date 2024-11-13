@@ -177,16 +177,38 @@ def prepare_argparser() -> ArgumentParser:
     return parser
 
 
-def update_env(env: os._Environ, bindir: str, cwd: str) -> dict:
-    """Update PATH and PYTHONPATH env variables.
+def update_env(env: os._Environ, bindir: str, cwd: str, classic_flavor=False) -> dict:
+    """Return an updated environment variables dict.
 
-    PATH is modified to contain bindir as the first entry. This ensures that `pytest` can
-    be found.
-    PYTHONPATH is set to cwd. This ensures that the correct Salt code is tested.
+    PATH and PYTHONPATH are always updated. For the classic flavor, environment variables
+    set by the Salt Bundle are unset.
+
+    Args:
+      env: Original environment variables
+      bindir: Path to a the bin/ directory where pytest is located.
+      cwd: Current working directory, determines where Python finds the Salt code base.
+      classic_flavor: If True, the following environment variables are unset. Default: False
+        This is required when the Salt Bundle's salt-test is used with --flavor=classic.
+        Defaults to True, i.e. the variables are kept. Environment variables: VIRTUAL_ENV,
+        VENV_PIP_TARGET, LD_LIBRARY_PATH, PYTHONHOME, PYTHONSTARTUP, SALT_CONFIG_DIR, CPATH
+
     """
     env_copy = env.copy()
     env_copy["PATH"] = f"{bindir}:{env_copy['PATH']}"
     env_copy["PYTHONPATH"] = cwd
+
+    if classic_flavor:
+        for var in (
+            "CPATH",
+            "LD_LIBRARY_PATH",
+            "PYTHONHOME",
+            "PYTHONSTARTUP",
+            "SALT_CONFIG_DIR",
+            "VENV_PIP_TARGET",
+            "VIRTUAL_ENV",
+        ):
+            del env_copy[var]
+
     return env_copy
 
 
@@ -224,7 +246,7 @@ def main():
 
     bindir = testsuite_root_to_bindir(testsuite_root)
 
-    env = update_env(os.environ, bindir, cwd)
+    env = update_env(os.environ, bindir, cwd, args.package_flavor == "classic")
     cmd = pytest_cmd(args.test_group, skiplist, config, args.pytest_args)
     print("Running:", " ".join(cmd))
     pytest_retcode = subprocess.run(
