@@ -2,7 +2,6 @@
 import argparse
 import io
 
-import pytest
 import salt_test
 
 
