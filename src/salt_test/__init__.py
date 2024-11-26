@@ -1,4 +1,5 @@
 """Run Salt Test Suite by test group."""
+
 import os
 import pathlib
 import re
@@ -6,8 +7,7 @@ import subprocess
 import sys
 import typing
 import urllib.request
-from argparse import ArgumentParser, FileType
-from collections import defaultdict
+from argparse import ArgumentParser
 
 try:
     import tomllib  # available in Python 3.11+
@@ -32,6 +32,16 @@ DEFAULT_CONFIG = {
 FLAVOR_RPM = {
     "classic": "python3-salt-testsuite",
     "bundle": "venv-salt-minion-testsuite",
+}
+
+VENV_ENV_PARAMS = {
+    "CPATH",
+    "LD_LIBRARY_PATH",
+    "PYTHONHOME",
+    "PYTHONSTARTUP",
+    "SALT_CONFIG_DIR",
+    "VENV_PIP_TARGET",
+    "VIRTUAL_ENV",
 }
 
 
@@ -177,16 +187,26 @@ def prepare_argparser() -> ArgumentParser:
     return parser
 
 
-def update_env(env: os._Environ, bindir: str, cwd: str) -> dict:
+def update_env(env: os._Environ, bindir: str, cwd: str, is_classic=False) -> dict:
     """Update PATH and PYTHONPATH env variables.
 
     PATH is modified to contain bindir as the first entry. This ensures that `pytest` can
     be found.
     PYTHONPATH is set to cwd. This ensures that the correct Salt code is tested.
+
+    Args:
+      env: Original environment variables
+      bindir: Path to a the bin/ directory where pytest is located.
+      cwd: Current working directory, determines where Python finds the Salt code base.
+      is_classic: If True, the VENV_ENV_PARAMS environment variables are unset. Default: False
+        This is required when the Salt Bundle's salt-test is used with --flavor=classic.
     """
     env_copy = env.copy()
     env_copy["PATH"] = f"{bindir}:{env_copy['PATH']}"
     env_copy["PYTHONPATH"] = cwd
+    if is_classic:
+        for key in VENV_ENV_PARAMS:
+            env_copy.pop(key, None)
     return env_copy
 
 
@@ -224,7 +244,7 @@ def main():
 
     bindir = testsuite_root_to_bindir(testsuite_root)
 
-    env = update_env(os.environ, bindir, cwd)
+    env = update_env(os.environ, bindir, cwd, args.package_flavor == "classic")
     cmd = pytest_cmd(args.test_group, skiplist, config, args.pytest_args)
     print("Running:", " ".join(cmd))
     pytest_retcode = subprocess.run(
