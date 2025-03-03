@@ -1,5 +1,6 @@
 """Run Salt Test Suite by test group."""
 
+import io
 import os
 import pathlib
 import re
@@ -156,7 +157,7 @@ def prepare_argparser() -> ArgumentParser:
         "--skiplist",
         "-s",
         type=str,
-        required=True,
+        required=False,
         help="Specify location of skiplist (TOML). Can be a HTTP URL.",
     )
     parser.add_argument(
@@ -224,12 +225,15 @@ def main():
     else:
         config = DEFAULT_CONFIG
 
-    if args.skiplist.startswith("http"):
-        with urllib.request.urlopen(args.skiplist) as f:
-            skiplist = parse_skiplist(f, config.keys())
+    if args.skiplist:
+        if args.skiplist.startswith("http"):
+            with urllib.request.urlopen(args.skiplist) as f:
+                skiplist = parse_skiplist(f, config.keys())
+        else:
+            with open(args.skiplist, "rb") as f:
+                skiplist = parse_skiplist(f, config.keys())
     else:
-        with open(args.skiplist, "rb") as f:
-            skiplist = parse_skiplist(f, config.keys())
+        skiplist = parse_skiplist(io.BytesIO(), config.keys())
 
     try:
         testsuite_root = find_testsuite_root(args.package_flavor)
