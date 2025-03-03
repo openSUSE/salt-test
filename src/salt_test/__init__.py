@@ -92,12 +92,24 @@ def find_testsuite_root(flavor: str) -> str:
     """
 
     def _list_files(pkg: str) -> typing.List[str]:
+        """List files of rpm "pkg".
+
+        "pkg" can be a provided rpm symbol
+        """
         try:
             cp = subprocess.run(
-                ["rpm", "-q", "-l", pkg],
+                ["rpm", "-q", "--whatprovides", pkg],
                 stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
                 encoding="utf-8",
             )
+            if cp.returncode == 0:
+                name = cp.stdout.strip()
+                cp = subprocess.run(
+                    ["rpm", "-q", "-l", name],
+                    stdout=subprocess.PIPE,
+                    encoding="utf-8",
+                )
         except FileNotFoundError:
             cp = subprocess.run(
                 ["dpkg", "-L", pkg],
