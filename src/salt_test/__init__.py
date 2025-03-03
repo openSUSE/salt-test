@@ -1,5 +1,6 @@
 """Run Salt Test Suite by test group."""
 
+import io
 import os
 import pathlib
 import re
@@ -158,7 +159,6 @@ def prepare_argparser() -> ArgumentParser:
         "--skiplist",
         "-s",
         type=str,
-        required=True,
         help="Specify location of skiplist (TOML). Can be a HTTP URL.",
     )
     parser.add_argument(
@@ -230,15 +230,18 @@ def main():
     else:
         config = DEFAULT_CONFIG
 
-    if args.skiplist.startswith("http"):
-        try:
-            with urllib.request.urlopen(args.skiplist) as f:
+    if args.skiplist:
+        if args.skiplist.startswith("http"):
+            try:
+                with urllib.request.urlopen(args.skiplist) as f:
+                    skiplist = parse_skiplist(f, config.keys())
+            except HTTPError as e:
+                raise AttributeError(f"URL '{args.skiplist}' is not available") from e
+        else:
+            with open(args.skiplist, "rb") as f:
                 skiplist = parse_skiplist(f, config.keys())
-        except HTTPError as e:
-            raise AttributeError(f"URL '{args.skiplist}' is not available") from e
     else:
-        with open(args.skiplist, "rb") as f:
-            skiplist = parse_skiplist(f, config.keys())
+        skiplist = parse_skiplist(io.BytesIO(), config.keys())
 
     if args.package_flavor == "classic":
         args.package_flavor = "python3"
