@@ -33,6 +33,7 @@ DEFAULT_CONFIG = {
 FLAVOR_RPM = {
     "classic": "python3-salt-testsuite",
     "bundle": "venv-salt-minion-testsuite",
+    "auto": None,
 }
 
 VENV_ENV_PARAMS = {
@@ -235,11 +236,21 @@ def main():
     else:
         skiplist = parse_skiplist(io.BytesIO(), config.keys())
 
-    try:
-        testsuite_root = find_testsuite_root(args.package_flavor)
-    except RuntimeError as e:
-        print(e)
-        sys.exit(1)
+    package_flavor = args.package_flavor
+    testsuite_root = None
+    if package_flavor == "auto":
+        # In auto mode try bundle first, then classic
+        try:
+            testsuite_root = find_testsuite_root("bundle")
+        except RuntimeError:
+            package_flavor = "classic"
+
+    if testsuite_root is None:
+        try:
+            testsuite_root = find_testsuite_root(package_flavor)
+        except RuntimeError as e:
+            print(e)
+            sys.exit(1)
 
     if args.directory:
         cwd = args.directory
