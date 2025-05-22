@@ -30,7 +30,6 @@ DEFAULT_CONFIG = {
 }
 
 FLAVOR_RPM = {
-    "classic": "python3-salt-testsuite",
     "bundle": "venv-salt-minion-testsuite",
 }
 
@@ -86,7 +85,7 @@ def parse_config(file: typing.BinaryIO):
 def find_testsuite_root(flavor: str) -> str:
     """Find root of test suite based.
 
-    :param flavor: One of "classic", "bundle".
+    :param flavor: Either "bundle", or python version, e.g. "python3", "python311", etc.
     """
 
     def _list_files(pkg: str) -> typing.List[str]:
@@ -106,7 +105,10 @@ def find_testsuite_root(flavor: str) -> str:
             return []
         return cp.stdout.split()
 
-    pkg = FLAVOR_RPM[flavor]
+    if flavor in FLAVOR_RPM:
+        pkg = FLAVOR_RPM[flavor]
+    else:
+        pkg = f"{flavor}-salt-testsuite"
     pkg_files = _list_files(pkg)
     root = None
     for file in pkg_files:
@@ -168,9 +170,8 @@ def prepare_argparser() -> ArgumentParser:
     parser.add_argument(
         "--package-flavor",
         "-f",
-        choices=tuple(FLAVOR_RPM.keys()),
         default="bundle",
-        help="Used to determine the Python environment that includes dependencies.",
+        help="Used to determine the Python environment that includes dependencies, e.g. 'bundle', 'python3', 'python311', ...",
     )
     parser.add_argument(
         "--directory",
@@ -231,6 +232,9 @@ def main():
         with open(args.skiplist, "rb") as f:
             skiplist = parse_skiplist(f, config.keys())
 
+    if args.package_flavor == "classic":
+        args.package_flavor = "python3"
+
     try:
         testsuite_root = find_testsuite_root(args.package_flavor)
     except RuntimeError as e:
@@ -244,7 +248,7 @@ def main():
 
     bindir = testsuite_root_to_bindir(testsuite_root)
 
-    env = update_env(os.environ, bindir, cwd, args.package_flavor == "classic")
+    env = update_env(os.environ, bindir, cwd, args.package_flavor != "bundle")
     cmd = pytest_cmd(args.test_group, skiplist, config, args.pytest_args)
     print("Running:", " ".join(cmd))
     pytest_retcode = subprocess.run(
