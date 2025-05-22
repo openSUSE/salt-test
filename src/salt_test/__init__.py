@@ -3,6 +3,7 @@
 import os
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 import typing
@@ -30,7 +31,7 @@ DEFAULT_CONFIG = {
 }
 
 FLAVOR_RPM = {
-    "classic": "python3-salt-testsuite",
+    "classic": "salt-testsuite",
     "bundle": "venv-salt-minion-testsuite",
 }
 
@@ -89,6 +90,21 @@ def find_testsuite_root(flavor: str) -> str:
     :param flavor: One of "classic", "bundle".
     """
 
+    def _get_classic_pkg_name(pkg: str) -> str:
+        """
+        Classic salt package can use different python versions,
+        which changes its name, e.g. python3-..., or python311-...
+        """
+        if not shutil.which("rpm"):
+            raise RuntimeError(
+                "Classic Salt testsuite is supported only on RPM systems"
+            )
+
+        out = subprocess.getoutput("rpm -qa --queryformat='%{name}\n' | grep '" + pkg + "$'")
+        if out:
+            out = out.split()[0]
+        return out
+
     def _list_files(pkg: str) -> typing.List[str]:
         try:
             cp = subprocess.run(
@@ -107,6 +123,8 @@ def find_testsuite_root(flavor: str) -> str:
         return cp.stdout.split()
 
     pkg = FLAVOR_RPM[flavor]
+    if flavor == "classic":
+        pkg = _get_classic_pkg_name(pkg)
     pkg_files = _list_files(pkg)
     root = None
     for file in pkg_files:
