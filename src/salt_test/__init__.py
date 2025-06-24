@@ -139,9 +139,8 @@ def testsuite_root_to_bindir(root: str) -> str:
 def pytest_cmd(group: str, skiplist: dict, config: dict, extra_args: typing.List[str]):
     """Compose the correct command args for pytest."""
     cmd = ["pytest"]
-    if not extra_args:
-        extra_args = config[group]["pytest_args"]
-    cmd.extend(extra_args)
+    args = config[group]["pytest_args"] + extra_args
+    cmd.extend(args)
     for skipped_file in skiplist[group]["ignore"]:
         cmd.extend(["--ignore", skipped_file])
     for skipped_test in skiplist[group]["skip"]:
@@ -184,7 +183,9 @@ def prepare_argparser() -> ArgumentParser:
     parser.add_argument(
         "pytest_args",
         nargs="*",
-        help="Specify extra arguments for pytest, separated from 'test_group' by a single --.",
+        help="Specify extra arguments for pytest, separated from"
+        " 'test_group' by a single --. They are merged with"
+        " pytest_args specified in the config.",
     )
     return parser
 
