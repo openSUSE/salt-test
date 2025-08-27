@@ -25,13 +25,13 @@ To run the a version of the test suite that's not packaged yet (the test suite p
 salt-test --skiplist skipped.toml --directory /code/ functional
 ```
 
-To run test non-bundled version, use the `--package-flavor` argument to test the `python3-salt`, for example:
+To test non-bundled Salt versions, use the `--package-flavor` argument, for example:
 ```sh
-# Test python3-salt-testsuite
+# Run tests from the python3-salt-testsuite RPM/deb
 salt-test --package-flavor python3 --skiplist skipped.toml unit
-# Test python311-salt-testsuite
+# Run tests from the python311-salt-testsuite RPM/deb
 salt-test --package-flavor python311 --skiplist skipped.toml integration
-# Test python313-salt-testsuite
+# Run tests from the python313-salt-testsuite RPM/deb
 salt-test --package-flavor python313 --skiplist skipped.toml functional
 ```
 
