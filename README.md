@@ -1,6 +1,6 @@
 # `salt-test`
 
-`salt-test` is a test suite launcher for Salt's test suite by "test group". It takes a `skiplist` that defines which tests files to ignore and which tests to skip. `salt-test` expects the Salt test suite installed via the `python3-salt-testsuite`/`venv-salt-minion-testsuite` rpms. By default, `venv-salt-minion-testsuite` is used (`--flavor bundle`). Pass `--flavor classic` to execute tests inside the `python3-salt-testsuite` package.
+`salt-test` is a test suite launcher for Salt's test suite by "test group". It takes a `skiplist` that defines which tests files to ignore and which tests to skip. `salt-test` expects the Salt test suite installed via the `python3-salt-testsuite`/`venv-salt-minion-testsuite` rpms. By default, `venv-salt-minion-testsuite` is used (`--package-flavor bundle`). 
 
 ## Usage
 The basic usage is `salt-test --skiplist skiplist.toml <test group>`.
@@ -24,6 +24,17 @@ To run the a version of the test suite that's not packaged yet (the test suite p
 ```sh
 salt-test --skiplist skipped.toml --directory /code/ functional
 ```
+
+To run test non-bundled version, use the `--package-flavor` argument to test the `python3-salt`, for example:
+```sh
+# Test python3-salt-testsuite
+salt-test --package-flavor python3 --skiplist skipped.toml unit
+# Test python311-salt-testsuite
+salt-test --package-flavor python311 --skiplist skipped.toml integration
+# Test python313-salt-testsuite
+salt-test --package-flavor python313 --skiplist skipped.toml functional
+```
+
 
 # Test requirements
 
