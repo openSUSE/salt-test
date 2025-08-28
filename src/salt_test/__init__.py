@@ -222,7 +222,7 @@ def main():
                 with urllib.request.urlopen(args.config) as f:
                     config = parse_config(f)
             except HTTPError as e:
-                raise AttributeError(f"URL {args.config} is not available") from e
+                raise AttributeError(f"URL '{args.config}' is not available") from e
         else:
             with open(args.config, "rb") as f:
                 config = parse_config(f)
@@ -234,7 +234,7 @@ def main():
             with urllib.request.urlopen(args.skiplist) as f:
                 skiplist = parse_skiplist(f, config.keys())
         except HTTPError as e:
-            raise AttributeError(f"URL {args.skiplist} is not available") from e
+            raise AttributeError(f"URL '{args.skiplist}' is not available") from e
     else:
         with open(args.skiplist, "rb") as f:
             skiplist = parse_skiplist(f, config.keys())
