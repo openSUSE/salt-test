@@ -6,6 +6,7 @@ import re
 import subprocess
 import sys
 import typing
+from urllib.error import HTTPError
 import urllib.request
 from argparse import ArgumentParser
 
@@ -217,8 +218,11 @@ def main():
 
     if args.config:
         if args.config.startswith("http"):
-            with urllib.request.urlopen(args.config) as f:
-                config = parse_config(f)
+            try:
+                with urllib.request.urlopen(args.config) as f:
+                    config = parse_config(f)
+            except HTTPError as e:
+                raise AttributeError(f"URL '{args.config}' is not available") from e
         else:
             with open(args.config, "rb") as f:
                 config = parse_config(f)
@@ -226,8 +230,11 @@ def main():
         config = DEFAULT_CONFIG
 
     if args.skiplist.startswith("http"):
-        with urllib.request.urlopen(args.skiplist) as f:
-            skiplist = parse_skiplist(f, config.keys())
+        try:
+            with urllib.request.urlopen(args.skiplist) as f:
+                skiplist = parse_skiplist(f, config.keys())
+        except HTTPError as e:
+            raise AttributeError(f"URL '{args.skiplist}' is not available") from e
     else:
         with open(args.skiplist, "rb") as f:
             skiplist = parse_skiplist(f, config.keys())
