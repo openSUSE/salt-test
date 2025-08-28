@@ -86,17 +86,18 @@ def parse_skiplist(
 def parse_config(file: typing.BinaryIO):
     """Reads the config and returns a dictionary.
 
-    The dictionary fills in missing test groups to guarantee [] access.
+    The dictionary fills in missing test groups to guarantee [] access.
     """
     raw_dict = toml.load(file)
     # raw_dict: {groups: {$group: {"dirs": [...], "pytest_args": [...]}
 
-    config = {}
-    for group in raw_dict["groups"]:
-        config[group]["dirs"] = group["dirs"]
-        config[group]["pytest_args"] = group.get("pytest_args", [])
+    ret = {}
+    for group, config in raw_dict["groups"].items():
+        ret[group] = {}
+        ret[group]["dirs"] = config["dirs"]
+        ret[group]["pytest_args"] = config.get("pytest_args", [])
 
-    return config
+    return ret
 
 
 def resolve_testsuite_flavor(flavor: str) -> str:
