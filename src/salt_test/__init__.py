@@ -22,11 +22,10 @@ import contextlib
 import io
 import os
 import re
+import requests
 import subprocess
 import sys
 import typing
-from urllib.error import HTTPError
-import urllib.request
 from argparse import ArgumentParser
 
 try:
@@ -281,9 +280,11 @@ def main():
     if args.config:
         if args.config.startswith("http"):
             try:
-                with urllib.request.urlopen(args.config) as f:
-                    config = parse_config(f)
-            except HTTPError as e:
+                response = requests.get(args.config, stream=True)
+                response.raise_for_status()
+                response.raw.decode_content = True
+                config = parse_config(response.raw)
+            except requests.exceptions.HTTPError as e:
                 raise AttributeError(f"URL '{args.config}' is not available") from e
         else:
             with open(args.config, "rb") as f:
@@ -294,9 +295,11 @@ def main():
     if args.skiplist:
         if args.skiplist.startswith("http"):
             try:
-                with urllib.request.urlopen(args.skiplist) as f:
-                    skiplist = parse_skiplist(f, config.keys())
-            except HTTPError as e:
+                response = requests.get(args.skiplist, stream=True)
+                response.raise_for_status()
+                response.raw.decode_content = True
+                skiplist = parse_skiplist(response.raw, config.keys())
+            except requests.exceptions.HTTPError as e:
                 raise AttributeError(f"URL '{args.skiplist}' is not available") from e
         else:
             with open(args.skiplist, "rb") as f:
